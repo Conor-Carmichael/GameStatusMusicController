@@ -1,0 +1,9 @@
+altair
+torch
+spotipy
+numpy
+pandas
+streamlit
+black
+opencv-python
+tqdm

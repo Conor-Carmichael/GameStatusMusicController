@@ -1,0 +1,8 @@
+*.mp4
+*.png
+*.jpg
+*.mov
+.env
+.cache*
+__pycache__
+.DS_*
