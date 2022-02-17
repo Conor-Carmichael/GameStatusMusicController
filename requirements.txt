@@ -1,9 +1,14 @@
-altair
 torch
+torch-vision
+pytorch-lightning
+timm==0.3.2
 spotipy
+streamlit
+opencv-python
+altair
 numpy
 pandas
-streamlit
 black
-opencv-python
 tqdm
+python-dotenv
+pyautogui
