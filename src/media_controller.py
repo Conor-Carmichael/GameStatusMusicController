@@ -1,3 +1,4 @@
+from typing import List
 import spotipy
 from spotipy.exceptions import SpotifyException
 from spotipy.util import prompt_for_user_token
@@ -25,7 +26,9 @@ class SpotifyController:
         client_secret:str,
         redirect:str,
         lower_vol_pctg:int,
+        actions:List[str]
     ) -> None:
+        # Authenticate user
         tkn = prompt_for_user_token(
             username=spotify_username,
             scope=scope, 
@@ -33,23 +36,34 @@ class SpotifyController:
             client_secret=client_secret, 
             redirect_uri=redirect
         )
-        # tkn = oauth.get_access_token()
         self.sp = spotipy.Spotify(
             auth=tkn
-        )        
+        )       
+        self.actions = [a.lower() for a in actions] 
         self.lower_vol_pctg = lower_vol_pctg
 
+    def handle_action_request(self, action:str) :
+        action = action.lower()
+        assert action in self.actions , "Unexpected action request."
+        fn = getattr(self, action)
+        if action == 'play' and self.last_action == 'quiet':
+            self.increase_vol()
+        else:
+            fn()
+
+        self.last_action = action
+        
     def mute(self):
         try: 
             self.sp.volume(0)
         except SpotifyException as se:
             logger.warning("SpotifyException caught on mute()")
 
-    def decrease_vol(self):
+    def quiet(self):
         try: 
             self.sp.volume(self.lower_vol_pctg)
         except SpotifyException as se:
-            logger.warning("SpotifyException caught on decrease_vol()")
+            logger.warning("SpotifyException caught on quiet()")
 
     def increase_vol(self):
         try: 
@@ -62,6 +76,7 @@ class SpotifyController:
             self.sp.pause_playback()
         except SpotifyException as se:
             logger.warning("SpotifyException caught on pause()")
+        
         
 spotify_controller = SpotifyController(
     SPOTIFY_USERNAME,
