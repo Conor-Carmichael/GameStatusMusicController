@@ -17,7 +17,7 @@ import pickle
 from tqdm import tqdm
 
 from src.logger import logger
-from config import DATA_DIR, GAME_STATUS_MAP, LABELLED_DATA_ROOT_DIR
+from config import CLASSES, DATA_DIR, GAME_STATUS_MAP, LABELLED_DATA_ROOT_DIR
 
 def get_label_from_fname(fname):
     pass
@@ -58,7 +58,6 @@ class BinaryGameStateClassifier(pl.LightningModule):
 
         return loss
 
-
     def validation_step(self, batch, batch_idx):
         x, labels = batch
         logits = self.forward(x)
@@ -71,7 +70,6 @@ class BinaryGameStateClassifier(pl.LightningModule):
      
         return loss
 
-
     def test_step(self, batch, batch_nb):
         # OPTIONAL
         x, y = batch
@@ -83,6 +81,7 @@ class BinaryGameStateClassifier(pl.LightningModule):
     def configure_optimizers(self):
         # AdamW was used in the paper
         return torch.optim.AdamW(self.parameters(), lr=1e-4)
+
 
 class GameStateDataset():
 
@@ -106,7 +105,7 @@ class GameStateDataset():
         fname = self.images[idx]
         image = PIL.Image.open(os.path.join(self.img_dir, fname)).convert('RGB')
         image = self.transform(image)
-        label = self.labels[fname]
+        label = torch.Tensor(self.labels[fname])
         return image, label
 
     def _load_labels(self):
@@ -152,10 +151,15 @@ class GameStateDataModule(pl.LightningDataModule):
         with open(os.path.join(self.data_dir, "labels.pkl"), 'wb') as f:
             pickle.dump(label_dict, f)
 
-
     def _create_data_folders(self):
         all_files = []
         labels = {}
+
+        def create_label(idx_pos):
+            l = [0.0] * len(CLASSES)
+            l[idx_pos] = 1.0
+            return l
+
 
         logger.info("Creating dataset from class folders.")
         for cls in self.classes:
@@ -167,7 +171,9 @@ class GameStateDataModule(pl.LightningDataModule):
                 ]
                 filtered = list(filter(lambda f: f.endswith(self.input_file_ext), files))
                 for f in filtered:
-                    labels.update({f.split("/")[-1]: GAME_STATUS_MAP[cls]})
+                    # Map game state -> Class str -> Label int
+                    l = create_label(CLASSES[GAME_STATUS_MAP[cls]])
+                    labels.update({f.split("/")[-1]: l})
 
                 all_files.extend(filtered)
             
@@ -208,7 +214,7 @@ class GameStateDataModule(pl.LightningDataModule):
 
         img_transform = transforms.Compose(
             [
-                transforms.Grayscale(),
+                # transforms.Grayscale(),
                 transforms.ToTensor(),
                 transforms.Resize((224, 224)) 
             ]
