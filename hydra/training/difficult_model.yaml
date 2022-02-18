@@ -1,0 +1,25 @@
+classes: 
+  MENUS: 0
+  INACTIVE: 1
+  ACTIVE: 2
+
+states_per_class:
+  MENUS: ['MENU']
+  INACTIVE: ['SPECTATING','BUY_PHASE']
+  ACTIVE: ['MID_ROUND']
+
+class_actions:
+  MENU: 'PLAY'
+  INACTIVE: 'QUIET'
+  ACTIVE: 'PAUSE'
+
+spotify:
+  quiet_vol_pctg: 50
+
+model: 
+  model_type: 'BinaryGameStateClassifier'
+  model_backbone: 'deit'
+  batch_size: 4
+  learning_rate: 1e-5
+  train_epochs: 10
+  
