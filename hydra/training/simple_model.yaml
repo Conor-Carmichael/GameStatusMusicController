@@ -1,3 +1,6 @@
+defaults:
+  - base
+
 classes: 
   INACTIVE: 0
   ACTIVE: 1
