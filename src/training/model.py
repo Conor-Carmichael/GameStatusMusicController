@@ -22,7 +22,12 @@ from config import CLASSES, DATA_DIR, GAME_STATUS_MAP, LABELLED_DATA_ROOT_DIR
 def get_label_from_fname(fname):
     pass
 
-
+def get_model(model_class, args):
+    if model_class.upper() == 'BINARYGAMESTATECLASSIFIER':
+        return BinaryGameStateClassifier(**args)
+    
+    elif model_class.upper() == 'GAMESTATECLASSIFIER':
+        raise NotImplementedError("Have yet to adapt to > 2 outputs.")
 
 class BinaryGameStateClassifier(pl.LightningModule):
 

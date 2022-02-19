@@ -1,15 +1,27 @@
 from config import BUILD_TR_VA_TE, IMAGE_EXT, GAME_STATUS_MAP, BATCH_SIZE, LABELLED_DATA_ROOT_DIR
 from src.training.model import *
 import pytorch_lightning as pl
+import hydra
+from omegaconf import DictConfig, OmegaConf
 
+from dotenv import load_dotenv
+load_dotenv()
 
-def main():
+config_path = os.environ['PYTHONPATH'] + "/hydra/"
+
+@hydra.main(
+    config_path=config_path, 
+    config_name="training/simple_model.yaml"
+)
+def main(cfg : DictConfig, env:dict) -> None:
+    cfg = cfg.training
+
     data_module = GameStateDataModule(
-        data_dir=LABELLED_DATA_ROOT_DIR,
-        input_file_ext=IMAGE_EXT,
-        classes=list(GAME_STATUS_MAP.keys()),
-        batch_size=BATCH_SIZE,
-        build_dataset_splits=BUILD_TR_VA_TE 
+        data_dir=cfg.data.root,
+        input_file_ext=cfg.data.image_fmt,
+        classes=cfg.class_actions.keys(),
+        batch_size=cfg.model.batch_size,
+        build_dataset_splits=True 
     )
     data_module.setup()
 
@@ -22,4 +34,5 @@ def main():
     )
 
 if __name__ == '__main__':
+
     main()
